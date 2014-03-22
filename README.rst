@@ -1,5 +1,5 @@
-Usergrid: Python Access to Usergrid REST API
-============================================
+Usergrid: Python Lib to Access Usergrid REST API
+================================================
 
 Usergrid: https://github.com/apigee/usergrid-stack
 
