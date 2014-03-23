@@ -30,10 +30,11 @@ class RESTError(UsergridException):
 
         :param data: A dictionary of the response data.
         """
-        self.timestamp = data['timestamp']
         self.error = data['error']
-        self.exception_name = data['exception']
         self.description = data['error_description']
+
+        self.timestamp = data['timestamp'] if 'timestamp' in data else datetime.datetime.now()
+        self.exception_name = data['exception'] if 'exception' in data else None
         super(RESTError, self).__init__(*args, **kwargs)
 
     def __repr__(self):

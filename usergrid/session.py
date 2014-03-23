@@ -11,6 +11,12 @@ authentication and communication are done with a usergrid server.
 import re
 import urllib
 
+from .rest import RESTClient as rest
+from .exceptions import (
+    UsergridException,
+    RESTError
+)
+
 class BaseSession(object):
     API_URL = 'api.usergrid.com'
     APP_NAME = 'sandbox'
@@ -78,6 +84,8 @@ class UsergridSession(BaseSession):
                  access_token=None,
                  client_id=None,
                  client_secret=None,
+                 username=None,
+                 password=None,
                  is_secure=True,
                  **kwargs):
         """Initialize a Usergrid session.
@@ -86,6 +94,8 @@ class UsergridSession(BaseSession):
         :param access_token: access_token, if you already have one.
         :param client_id: (optional) client_id is needed for 'application' and 'organization' authentication.
         :param client_secret: (optional) client_secret is needed for 'application' and 'organization' authentication.
+        :param username: (optional) username is needed for 'user' authentication.
+        :param password: (optional) password is needed for 'user' authentication.
         :param is_secure: If your usergrid app is not secure and doesn't need any token, set this to ``False``.
         """
 
@@ -98,6 +108,10 @@ class UsergridSession(BaseSession):
             "expected auth_level of 'user', 'application', 'organization' or 'admin'"
         self.token = access_token
         self.auth_level = auth_level
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.username = username
+        self.password = password
         self.is_secure = is_secure
 
     def set_token(self, access_token):
@@ -106,5 +120,50 @@ class UsergridSession(BaseSession):
 
         self.token = access_token
 
-    # def login(self, username, password):
-    #     """Link the session using the Application
+    def read_token(self, response):
+        """Read the access token from a ``usergrid.rest.RESTResponse`` and configure the session.
+        """
+
+        assert 'access_token' in response.data, "Cannot read the access token"
+
+        self.set_token(response.data['access_token'])
+
+    def build_access_headers(self):
+        """Build access headers for a future request.
+        Returns a tuple of (headers, params). (Only params are used for now)
+        """
+
+        if not self.is_linked():
+            self.authenticate()
+
+        params = {'access_token': self.token}
+
+        return {}, params
+
+    def authenticate(self):
+        """Authenticate the session based on the auth_level defined.
+        """
+
+        if self.is_linked(): return # already authenticated
+
+        try:
+            if self.auth_level == "user":
+                if not self.username or not self.password:
+                    raise ValueError("auth_level 'user' requires a username and password.")
+                res = self.login_()
+        except RESTError, e:
+            raise UsergridException("Unable to authenticate: " + e.description)
+
+        self.read_token(res)
+
+    def login_(self):
+        """Link the session using Legacy Auth"""
+
+        data = {
+            'grant_type': 'password',
+            'username': self.username,
+            'password': self.password
+        }
+
+        url = self.build_url('/token')
+        return rest.post(url, data=data)

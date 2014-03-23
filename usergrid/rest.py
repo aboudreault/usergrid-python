@@ -90,5 +90,4 @@ class RESTClient(object):
         :param data: (optional) A dictionary of the post parameters. Default to None.
         :param \*\*kwargs: Optional arguments that ``requests.request`` takes.
         """
-
         return cls.IMPL.request('POST', url, data=data, **kwargs)
