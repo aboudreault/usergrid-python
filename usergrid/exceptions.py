@@ -26,7 +26,7 @@ class RESTError(UsergridException):
     """
 
     def __init__(self, data, *args, **kwargs):
-        """Constructs the REST Error.
+        """Construct the REST Error.
 
         :param data: A dictionary of the response data.
         """

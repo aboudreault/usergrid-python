@@ -2,7 +2,8 @@
 
 from __future__ import absolute_import
 
-from . import session
+from . import sessions
+from . import clients
 
 __title__ = 'usergrid'
 __version__ = '0.0.1'

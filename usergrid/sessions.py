@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-usergrid.session
-~~~~~~~~~~~~~~~
+usergrid.sessions
+~~~~~~~~~~~~~~~~~
 
 This module contains the usergrid sessions. A session handles how the
 authentication and communication are done with a usergrid server.
@@ -115,7 +115,7 @@ class UsergridSession(BaseSession):
         self.is_secure = is_secure
 
     def set_token(self, access_token):
-        """Attach an access token to the UsergridSession.
+        """Attach an access token to the Session.
         """
 
         self.token = access_token
