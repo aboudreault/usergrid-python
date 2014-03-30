@@ -10,7 +10,6 @@ This module contains the usergrid clients.
 from .sessions import BaseSession, UsergridSession
 from .rest import RESTClient
 
-
 class BaseClient(object):
 
     def __init__(self, session, rest_client=None):
@@ -49,6 +48,7 @@ class BaseClient(object):
             url = self.session.build_url(target)
 
         return url, headers, params
+
 
 class ApplicationClient(BaseClient):
     """This class lets you make API calls to manage a Usergrid application. You'll need to obtain an

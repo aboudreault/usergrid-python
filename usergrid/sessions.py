@@ -80,7 +80,7 @@ class BaseSession(object):
 class UsergridSession(BaseSession):
 
     def __init__(self, org_name,
-                 auth_level='application',
+                 auth_level='client',
                  access_token=None,
                  client_id=None,
                  client_secret=None,
@@ -90,10 +90,10 @@ class UsergridSession(BaseSession):
                  **kwargs):
         """Initialize a Usergrid session.
 
-        :param auth_level: (optional) authentication level for the session. Must either be 'user', 'application', 'organization' or 'admin'. Default to 'application'.
+        :param auth_level: (optional) authentication level for the session. Must either be 'user', 'client', 'organization' or 'admin'. Default to 'client'.
         :param access_token: access_token, if you already have one.
-        :param client_id: (optional) client_id is needed for 'application' and 'organization' authentication.
-        :param client_secret: (optional) client_secret is needed for 'application' and 'organization' authentication.
+        :param client_id: (optional) client_id is needed for 'client' and 'organization' authentication.
+        :param client_secret: (optional) client_secret is needed for 'client' and 'organization' authentication.
         :param username: (optional) username is needed for 'user' authentication.
         :param password: (optional) password is needed for 'user' authentication.
         :param is_secure: If your usergrid app is not secure and doesn't need any token, set this to ``False``.
@@ -104,8 +104,8 @@ class UsergridSession(BaseSession):
         if access_token and not isinstance(access_token, basestring):
             raise ValueError("'access_token' must be a string")
 
-        assert auth_level in ['user', 'application', 'organization', 'admin'], \
-            "expected auth_level of 'user', 'application', 'organization' or 'admin'"
+        assert auth_level in ['user', 'client', 'organization', 'admin'], \
+            "expected auth_level of 'user', 'client', 'organization' or 'admin'"
         self.token = access_token
         self.auth_level = auth_level
         self.client_id = client_id
@@ -144,25 +144,46 @@ class UsergridSession(BaseSession):
         """Authenticate the session based on the auth_level defined.
         """
 
-        if self.is_linked(): return # already authenticated
+        if self.is_linked(): # already authenticated
+            return
+
+        auth_func = None
+
+        if self.auth_level == 'user':
+            if not self.username or not self.password:
+                raise ValueError('auth_level "user" requires a username and password.')
+            auth_func = self._login
+        elif self.auth_level == 'client':
+            if not self.client_id or not self.client_secret:
+                raise ValueError('auth_level "client" requires a client_id and client_secret.')
+            auth_func = self._client_credentials
 
         try:
-            if self.auth_level == "user":
-                if not self.username or not self.password:
-                    raise ValueError("auth_level 'user' requires a username and password.")
-                res = self.login_()
+            res = auth_func()
         except RESTError, e:
             raise UsergridException("Unable to authenticate: " + e.description)
 
         self.read_token(res)
 
-    def login_(self):
+    def _login(self):
         """Link the session using Legacy Auth"""
 
         data = {
             'grant_type': 'password',
             'username': self.username,
             'password': self.password
+        }
+
+        url = self.build_url('/token')
+        return rest.post(url, data=data)
+
+    def _client_credentials(self):
+        """Link the session using client credentials"""
+
+        data = {
+            'grant_type': 'client_credentials',
+            'client_id': self.client_id,
+            'client_secret': self.client_secret
         }
 
         url = self.build_url('/token')

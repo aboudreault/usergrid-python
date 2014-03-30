@@ -14,7 +14,8 @@ from requests.exceptions import RequestException
 from .exceptions import (
     UsergridException,
     RESTError
-    )
+)
+
 
 class RESTResponse(object):
     """A class that represents a Usergrid REST json response.
@@ -32,6 +33,7 @@ class RESTResponse(object):
         self.encoding = response.encoding
         self.data = response.json()
 
+
 class RESTClientImpl(object):
     """This is the RESTClient implementation.
 
@@ -45,7 +47,6 @@ class RESTClientImpl(object):
         """Initialize a RESTClientImpl instance.
         """
         pass
-
 
     def request(self, method, url, **kwargs):
         """Make a REST request.
@@ -64,6 +65,7 @@ class RESTClientImpl(object):
             raise RESTError(res.json())
 
         return RESTResponse(res)
+
 
 class RESTClient(object):
     """A class with all static methods to perform JSON REST requests. Used internally by the Usergrid
