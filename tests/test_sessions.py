@@ -19,12 +19,12 @@ class BaseSessionTestCase(unittest.TestCase):
                                 api_url='api.example.com',
                                 app_name='sandbox')
 
-    def test_default_values(self):
+    def test_ctor_default_values(self):
         sess = BaseSession('org_test')
         self.assertEquals(sess.api_url, 'api.usergrid.com')
         self.assertEquals(sess.app_name, 'sandbox')
 
-    def test_new_instance_values(self):
+    def test_ctor_values(self):
         sess = BaseSession('org_test',
                            api_url='api.test.com',
                            app_name='my_app'
@@ -77,7 +77,7 @@ class UsergridSessionTestCase(unittest.TestCase):
                                     password='test'
                                 )
 
-    def test_default_values(self):
+    def test_ctor_default_values(self):
         sess = UsergridSession('org_test')
         self.assertEquals(sess.api_url, 'api.usergrid.com')
         self.assertEquals(sess.app_name, 'sandbox')
@@ -89,7 +89,7 @@ class UsergridSessionTestCase(unittest.TestCase):
         self.assertIsNone(sess.password)
         self.assertTrue(sess.is_secure)
 
-    def test_new_instance_values(self):
+    def test_ctor_values(self):
         sess = UsergridSession('org_test',
                                api_url='api.test.com',
                                app_name='my_app',
@@ -148,7 +148,7 @@ class UsergridSessionTestCase(unittest.TestCase):
         httpretty.register_uri(
             httpretty.POST,
             'https://api.usergrid.com/org_test/sandbox/token',
-            body=MockUsergridResponse.INVALID_USER_AUTHENTICATION,
+            body=MockUsergridResponse.INVALID_AUTHENTICATION,
             status=400
         )
         with self.assertRaises(UsergridException):
@@ -176,3 +176,41 @@ class UsergridSessionTestCase(unittest.TestCase):
         self.sess.set_token('test_token')
         self.sess.authenticate()
         self.assertIsInstance(httpretty.last_request(), HTTPrettyRequestEmpty)
+        self.sess.build_access_headers()
+        self.assertIsInstance(httpretty.last_request(), HTTPrettyRequestEmpty)
+
+    @httpretty.activate
+    def test_build_access_headers(self):
+        httpretty.register_uri(
+            httpretty.POST,
+            'https://api.usergrid.com/org_test/sandbox/token',
+            body=MockUsergridResponse.VALID_USER_AUTHENTICATION,
+        )
+        self.assertFalse(self.sess.is_linked())
+        self.sess.build_access_headers()
+        self.assertTrue(self.sess.is_linked())
+
+    def test_missing_info_client_authenticate(self):
+        sess = UsergridSession('org_test',
+                               client_id='test'
+                           )
+
+        with self.assertRaises(ValueError):
+            sess.authenticate()
+        self.assertFalse(sess.is_linked())
+
+    @httpretty.activate
+    def test_client_authenticate(self):
+        httpretty.register_uri(
+            httpretty.POST,
+            'https://api.usergrid.com/org_test/sandbox/token',
+            body=MockUsergridResponse.VALID_CLIENT_AUTHENTICATION,
+        )
+        sess = UsergridSession('org_test',
+                               client_id='test',
+                               client_secret='test'
+                           )
+        self.assertFalse(sess.is_linked())
+        sess.authenticate()
+        self.assertIsInstance(httpretty.last_request(), HTTPrettyRequest)
+        self.assertTrue(sess.is_linked())
