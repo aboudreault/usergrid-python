@@ -1,18 +1,52 @@
-.coverage
-MANIFEST
-coverage.xml
-nosetests.xml
-junit-report.xml
-pylint.txt
-toy.py
-tox.ini
-violations.pyflakes.txt
-cover/
-build/
-docs/_build
-usergrid.egg-info/
-*.pyc
-*.swp
-*.egg
-*.ipynb*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
 env/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+coverage_all.xml
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+
+# Sphinx documentation
+docs/_build/
+
+# virtualenv
+env
+
+# ipython notebook
+.ipynb_checkpoints
+*.ipynb
