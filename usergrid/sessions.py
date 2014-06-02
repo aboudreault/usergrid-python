@@ -158,6 +158,8 @@ class UsergridSession(BaseSession):
             if not self.client_id or not self.client_secret:
                 raise ValueError('auth_level "client" requires a client_id and client_secret.')
             auth_func = self._client_credentials
+        else:
+            raise ValueError('Invalid "auth_level" value.')
 
         try:
             res = auth_func()

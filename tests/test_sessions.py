@@ -199,6 +199,17 @@ class UsergridSessionTestCase(unittest.TestCase):
             sess.authenticate()
         self.assertFalse(sess.is_linked())
 
+    def test_missing_info_invalid_auth_level(self):
+        sess = UsergridSession('org_test',
+                               client_id='test'
+                           )
+
+        sess.auth_level = 'invalid'
+
+        with self.assertRaises(ValueError):
+            sess.authenticate()
+        self.assertFalse(sess.is_linked())
+
     @httpretty.activate
     def test_client_authenticate(self):
         httpretty.register_uri(
